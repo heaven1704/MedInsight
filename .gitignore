@@ -1,0 +1,76 @@
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ───────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env.bak
+
+# ── Environment / secrets ──────────────────────────────────────────────────
+.env
+# .env.example is intentionally NOT ignored — it's safe to commit
+
+# ── Django ────────────────────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+backend/staticfiles/
+backend/media/
+
+# ── Migrations (keep these in source control) ─────────────────────────────
+# !backend/*/migrations/
+
+# ── Distribution / packaging ──────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# ── Testing & coverage ────────────────────────────────────────────────────
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# ── MyPy / type checkers ──────────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ── Node / Next.js (frontend comes in Step 5) ─────────────────────────────
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Editor & OS ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Docker ────────────────────────────────────────────────────────────────
+# docker-compose.override.yml is intentionally not ignored so team overrides
+# can be committed if needed. Add it here if you want it local-only:
+# docker-compose.override.yml
+
+# ── Misc ──────────────────────────────────────────────────────────────────
+*.bak
+*.tmp

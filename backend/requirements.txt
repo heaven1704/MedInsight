@@ -1,0 +1,27 @@
+# MedInsight backend dependencies — pinned exact versions
+# Install with: pip install -r requirements.txt
+
+# Core framework
+Django==6.1
+asgiref==3.12.1
+sqlparse==0.6.0
+tzdata==2026.3
+
+# REST API
+djangorestframework==3.18.0
+
+# JWT authentication
+djangorestframework-simplejwt==5.5.1
+PyJWT==2.13.0
+
+# CORS
+django-cors-headers==4.9.0
+
+# PostgreSQL adapter
+psycopg2-binary==2.9.12
+
+# Environment variable loading
+python-dotenv==1.2.3
+
+# Image / file handling (used by documents app)
+Pillow==12.3.0
