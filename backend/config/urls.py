@@ -15,19 +15,17 @@ Step 4:  /api/documents/    — Document upload / retrieval
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
-    # Step 3: JWT auth endpoints
     path("api/auth/", include("accounts.urls", namespace="accounts")),
-
-    # Step 4: Patient & Family endpoints
     path("api/", include("patients.urls")),
-
-    # Step 6: Appointments
     path("api/", include("appointments.urls")),
-
-    # TODO Step 7: documents
-    #   path("api/", include("documents.urls")),
+    path("api/", include("documents.urls")),
 ]
+
+# Serve uploaded media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

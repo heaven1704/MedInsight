@@ -24,6 +24,7 @@ import { PatientForm, type PatientFormSchema } from "@/components/patients/Patie
 import { AppointmentForm, type AppointmentFormSchema } from "@/components/appointments/AppointmentForm";
 import { formatDate, getInitials } from "@/lib/utils";
 import Link from "next/link";
+import DocumentsSection from "@/components/documents/DocumentsSection";
 
 // ── Status config (mirrors appointments page) ─────────────────────────────
 const STATUS_CONFIG: Record<AppointmentStatus, { label: string; icon: React.ElementType; color: string }> = {
@@ -559,18 +560,10 @@ export default function PatientDetailPage() {
           </div>
         </TabsContent>
 
-        {/* ── Documents placeholder ────────────────────────────────── */}
+        {/* ── Documents ───────────────────────────────────────────── */}
         <TabsContent value="documents">
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-[#E2D9D0] bg-white py-16 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F2EDE4]">
-              <FileText className="h-6 w-6 text-[#C8BFBA]" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[#3D3A38]">Documents coming in Step 7</p>
-              <p className="mt-1 text-xs text-[#9C9490]">
-                Prescriptions, lab reports, and uploaded files will appear here.
-              </p>
-            </div>
+          <div className="rounded-xl border border-[#E2D9D0] bg-white p-6">
+            <DocumentsSection patientId={patient.id} />
           </div>
         </TabsContent>
 
