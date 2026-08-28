@@ -86,3 +86,55 @@ export interface PatientFormValues {
   allergies: string;
   medical_history: string;
 }
+
+// ── Appointments ───────────────────────────────────────────────────────────
+
+export type AppointmentStatus = "scheduled" | "completed" | "cancelled" | "no_show";
+
+export interface AppointmentPatientDetail {
+  id: number;
+  full_name: string;
+  phone: string;
+}
+
+export interface AppointmentDoctorDetail {
+  id: number;
+  username: string;
+  full_name: string;
+}
+
+/** Full shape — returned by retrieve / create / update */
+export interface Appointment {
+  id: number;
+  patient: number;
+  patient_detail: AppointmentPatientDetail | null;
+  doctor: number | null;
+  doctor_detail: AppointmentDoctorDetail | null;
+  date: string;       // "YYYY-MM-DD"
+  time: string;       // "HH:MM:SS"
+  reason: string;
+  status: AppointmentStatus;
+  warnings: string[]; // non-empty when an overlap was detected on save
+}
+
+/** Lighter shape returned by the list endpoint */
+export interface AppointmentListItem {
+  id: number;
+  patient: number;
+  patient_name: string;
+  doctor: number | null;
+  doctor_name: string | null;
+  date: string;
+  time: string;
+  reason: string;
+  status: AppointmentStatus;
+}
+
+export interface AppointmentFormValues {
+  patient: number;
+  doctor: number | null;
+  date: string;
+  time: string;
+  reason: string;
+  status: AppointmentStatus;
+}

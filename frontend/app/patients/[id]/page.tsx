@@ -6,21 +6,196 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Calendar, FileText, Users, UserRound,
   AlertTriangle, CheckCircle2, Pencil, Trash2, Loader2, X,
+  Clock, CheckCircle, XCircle, MinusCircle, Plus,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import type { Patient, PatientListItem } from "@/types";
+import type { Patient, PatientListItem, AppointmentListItem, Appointment, AppointmentStatus } from "@/types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { PatientForm, type PatientFormSchema } from "@/components/patients/PatientForm";
+import { AppointmentForm, type AppointmentFormSchema } from "@/components/appointments/AppointmentForm";
 import { formatDate, getInitials } from "@/lib/utils";
 import Link from "next/link";
 
-// ── Detail skeleton ────────────────────────────────────────────────────────
+// ── Status config (mirrors appointments page) ─────────────────────────────
+const STATUS_CONFIG: Record<AppointmentStatus, { label: string; icon: React.ElementType; color: string }> = {
+  scheduled: { label: "Scheduled", icon: Clock,        color: "text-[#C1674F]" },
+  completed: { label: "Completed", icon: CheckCircle,  color: "text-[#6B8F71]" },
+  cancelled: { label: "Cancelled", icon: XCircle,      color: "text-[#9C9490]" },
+  no_show:   { label: "No Show",   icon: MinusCircle,  color: "text-[#9C9490]" },
+};
+
+const NEXT_STATUSES: Record<AppointmentStatus, AppointmentStatus[]> = {
+  scheduled: ["completed", "cancelled", "no_show"],
+  completed: [],
+  cancelled: ["scheduled"],
+  no_show:   ["scheduled"],
+};
+
+function formatTime(t: string) {
+  const [h, m] = t.split(":");
+  const hour = parseInt(h);
+  return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
+}
+
+// ── Appointments tab ───────────────────────────────────────────────────────
+function AppointmentsTab({ patientId, patientName }: { patientId: number; patientName: string }) {
+  const queryClient = useQueryClient();
+  const [addOpen, setAddOpen] = useState(false);
+  const [saveWarnings, setSaveWarnings] = useState<string[]>([]);
+
+  const { data: appointments, isLoading } = useQuery({
+    queryKey: ["patient-appointments", patientId],
+    queryFn: () =>
+      api.get<AppointmentListItem[]>(
+        `/api/appointments/?patient=${patientId}&page_size=50`
+      ).then((r) => (r as unknown as { results: AppointmentListItem[] }).results ?? r),
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: AppointmentStatus }) =>
+      api.patch<Appointment>(`/api/appointments/${id}/status/`, { status }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["patient-appointments", patientId] }),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (values: AppointmentFormSchema) =>
+      api.post<Appointment>("/api/appointments/", {
+        ...values,
+        time: values.time.length === 5 ? values.time + ":00" : values.time,
+      }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["patient-appointments", patientId] });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      if (result.warnings?.length) {
+        setSaveWarnings(result.warnings);
+      } else {
+        setAddOpen(false);
+        setSaveWarnings([]);
+      }
+    },
+  });
+
+  const list = appointments ?? [];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[#9C9490]">
+          {isLoading ? "Loading…" : `${list.length} appointment${list.length !== 1 ? "s" : ""}`}
+        </p>
+        <Button size="sm" onClick={() => { setSaveWarnings([]); setAddOpen(true); }}>
+          <Plus className="h-3.5 w-3.5" />
+          Book Appointment
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-2">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+        </div>
+      ) : list.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-[#E2D9D0] bg-white py-12 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F2EDE4]">
+            <Calendar className="h-6 w-6 text-[#C8BFBA]" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-[#3D3A38]">No appointments yet</p>
+            <p className="mt-1 text-xs text-[#9C9490]">Book the first appointment for this patient.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {list.map((appt) => {
+            const cfg  = STATUS_CONFIG[appt.status];
+            const Icon = cfg.icon;
+            const next = NEXT_STATUSES[appt.status];
+            return (
+              <div
+                key={appt.id}
+                className="flex items-center justify-between rounded-xl border border-[#E2D9D0] bg-white px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`h-4 w-4 flex-shrink-0 ${cfg.color}`} />
+                  <div>
+                    <p className="text-sm font-medium text-[#3D3A38]">
+                      {appt.date} at {formatTime(appt.time)}
+                    </p>
+                    <p className="text-xs text-[#9C9490]">
+                      {appt.doctor_name ?? "No doctor assigned"}
+                      {appt.reason ? ` · ${appt.reason}` : ""}
+                    </p>
+                  </div>
+                </div>
+
+                {next.length > 0 ? (
+                  <Select
+                    value={appt.status}
+                    onValueChange={(v) => statusMutation.mutate({ id: appt.id, status: v as AppointmentStatus })}
+                    disabled={statusMutation.isPending}
+                  >
+                    <SelectTrigger className="h-7 w-32 text-xs border-[#E2D9D0]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={appt.status} disabled>{cfg.label}</SelectItem>
+                      {next.map((s) => (
+                        <SelectItem key={s} value={s}>{STATUS_CONFIG[s].label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge variant={appt.status === "completed" ? "success" : "muted"}>
+                    {cfg.label}
+                  </Badge>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Book appointment dialog */}
+      <Dialog open={addOpen} onOpenChange={(o) => { setAddOpen(o); if (!o) setSaveWarnings([]); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Book Appointment</DialogTitle>
+            <DialogDescription>Schedule a new appointment for {patientName}.</DialogDescription>
+          </DialogHeader>
+          {createMutation.isError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {createMutation.error instanceof Error ? createMutation.error.message : "Failed"}
+            </div>
+          )}
+          <AppointmentForm
+            lockedPatientId={patientId}
+            lockedPatientName={patientName}
+            warnings={saveWarnings}
+            onSubmit={async (v) => { await createMutation.mutateAsync(v); }}
+            submitLabel="Book Appointment"
+          />
+          {saveWarnings.length > 0 && (
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" size="sm" onClick={() => { setAddOpen(false); setSaveWarnings([]); }}>
+                Close (appointment was saved)
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+
 function DetailSkeleton() {
   return (
     <div className="space-y-6">
@@ -377,18 +552,10 @@ export default function PatientDetailPage() {
           </div>
         </TabsContent>
 
-        {/* ── Appointments placeholder ─────────────────────────────── */}
+        {/* ── Appointments ────────────────────────────────────────── */}
         <TabsContent value="appointments">
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-[#E2D9D0] bg-white py-16 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F2EDE4]">
-              <Calendar className="h-6 w-6 text-[#C8BFBA]" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[#3D3A38]">Appointments coming in Step 6</p>
-              <p className="mt-1 text-xs text-[#9C9490]">
-                Scheduling and appointment history will appear here.
-              </p>
-            </div>
+          <div className="rounded-xl border border-[#E2D9D0] bg-white p-6">
+            <AppointmentsTab patientId={patient.id} patientName={patient.full_name} />
           </div>
         </TabsContent>
 
