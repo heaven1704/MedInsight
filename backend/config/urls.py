@@ -14,16 +14,13 @@ Step 4:  /api/documents/    — Document upload / retrieval
 """
 
 from django.contrib import admin
-from django.urls import path
-
-# Media file serving in development is added in Step 4 when the first
-# model-backed file upload is wired up.
+from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # TODO Step 3: add JWT auth routes
-    #   path("api/auth/", include("accounts.urls")),
+    # Step 3: JWT auth endpoints
+    path("api/auth/", include("accounts.urls", namespace="accounts")),
 
     # TODO Step 4: add app-level API routes
     #   path("api/patients/",      include("patients.urls")),

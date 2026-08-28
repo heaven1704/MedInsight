@@ -44,6 +44,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
 ]
 
@@ -169,6 +170,16 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# ---------------------------------------------------------------------------
+# Clinical access control
+# ---------------------------------------------------------------------------
+
+# When False (default / demo mode): any authenticated user can read any patient.
+# When True: doctor-first logic is enforced via has_clinical_access() in
+# accounts/permissions.py.  Flip this to True once the approval workflow
+# is built (planned for a later step).
+ENFORCE_CLINICAL_ACCESS = os.getenv("ENFORCE_CLINICAL_ACCESS", "False") == "True"
 
 # ---------------------------------------------------------------------------
 # CORS
