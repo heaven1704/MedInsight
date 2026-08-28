@@ -17,7 +17,7 @@ import { PatientForm, type PatientFormSchema } from "@/components/patients/Patie
 import { formatDate, getInitials } from "@/lib/utils";
 import { useDebounce } from "@/lib/useDebounce";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 // ── Gender badge colours ───────────────────────────────────────────────────
 const genderVariant = {

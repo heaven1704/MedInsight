@@ -14,10 +14,20 @@ class User(AbstractUser):
         DOCTOR      = "doctor",      "Doctor"
         RECEPTIONIST = "receptionist", "Receptionist"
 
+    class ApprovalStatus(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
         default=Role.RECEPTIONIST,
+    )
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.APPROVED,
     )
 
     class Meta:

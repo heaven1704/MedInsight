@@ -66,9 +66,12 @@ export function useCurrentUser(): {
   const [loading, setLoading] = useState<boolean>(!getCachedUser());
   const [error, setError] = useState<string | null>(null);
 
+  // Cached users finish the loading transition when the auth effect runs.
   useEffect(() => {
     if (user) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setLoading(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 

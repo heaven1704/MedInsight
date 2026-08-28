@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import type { Document } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/utils";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -36,11 +37,29 @@ export default function DocumentDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [ocrError, setOcrError] = useState<string | null>(null);
+  const [extractedName, setExtractedName] = useState("");
+  const [extractedDate, setExtractedDate] = useState("");
+  const [extractedAge, setExtractedAge] = useState("");
+  const [extractedMedicines, setExtractedMedicines] = useState("[]");
+  const [extractedAmount, setExtractedAmount] = useState("");
+  const [applyMessage, setApplyMessage] = useState<string | null>(null);
 
   const { data: doc, isLoading, isError } = useQuery({
     queryKey: ["document", params.id],
     queryFn: () => api.get<Document>(`/api/documents/${params.id}/`),
   });
+
+  // The query result hydrates editable review fields once it arrives.
+  useEffect(() => {
+    if (!doc) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setExtractedName(doc.extracted_name ?? "");
+    setExtractedDate(doc.extracted_date ?? "");
+    setExtractedAge(doc.extracted_age == null ? "" : String(doc.extracted_age));
+    setExtractedMedicines(JSON.stringify(doc.extracted_medicines ?? [], null, 2));
+    setExtractedAmount(doc.extracted_amount ?? "");
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [doc]);
 
   const ocrMutation = useMutation({
     mutationFn: async () => {
@@ -58,6 +77,14 @@ export default function DocumentDetailPage() {
     onError: () => {
       setOcrError("OCR unavailable, try again");
     },
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: () => api.patch(`/api/patients/${doc?.patient}/`, {
+      full_name: extractedName,
+      date_of_birth: extractedDate || null,
+    }),
+    onSuccess: () => setApplyMessage("Patient record updated with the confirmed extracted details."),
   });
 
   if (isLoading) {
@@ -169,7 +196,7 @@ export default function DocumentDetailPage() {
       )}
 
       <div className="rounded-xl border border-[#E2D9D0] bg-white p-6">
-        <h2 className="text-sm font-semibold text-[#3D3A38]">Extracted text</h2>
+        <h2 className="text-sm font-semibold text-[#3D3A38]">Structured OCR review</h2>
         {running && (
           <div className="mt-4 flex items-center gap-2 text-sm text-[#6B6460]">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -181,10 +208,31 @@ export default function DocumentDetailPage() {
             OCR unavailable, try again
           </p>
         )}
-        {!running && !ocrError && doc.processing_status !== "needs_review" && doc.extracted_text && (
-          <pre className="mt-4 max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-lg bg-[#FAF7F2] p-4 text-sm leading-relaxed text-[#3D3A38]">
-            {doc.extracted_text}
-          </pre>
+        {!running && !ocrError && doc.processing_status === "processed" && (
+          <div className="mt-4 space-y-4">
+            {doc.auto_update_message && (
+              <p className="rounded-md bg-[#6B8F71]/10 px-3 py-2 text-sm text-[#3D3A38]">{doc.auto_update_message}</p>
+            )}
+            {applyMessage && <p className="rounded-md bg-[#6B8F71]/10 px-3 py-2 text-sm text-[#3D3A38]">{applyMessage}</p>}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="space-y-1 text-xs text-[#6B6460]">Name<Input value={extractedName} onChange={(event) => setExtractedName(event.target.value)} /></label>
+              <label className="space-y-1 text-xs text-[#6B6460]">Date<Input type="date" value={extractedDate} onChange={(event) => setExtractedDate(event.target.value)} /></label>
+              <label className="space-y-1 text-xs text-[#6B6460]">Age<Input type="number" value={extractedAge} onChange={(event) => setExtractedAge(event.target.value)} /></label>
+              <label className="space-y-1 text-xs text-[#6B6460]">Amount<Input value={extractedAmount} onChange={(event) => setExtractedAmount(event.target.value)} /></label>
+            </div>
+            <label className="block space-y-1 text-xs text-[#6B6460]">Medicines (JSON)
+              <textarea value={extractedMedicines} onChange={(event) => setExtractedMedicines(event.target.value)} rows={5} className="w-full rounded-md border border-[#E2D9D0] p-3 font-mono text-sm" />
+            </label>
+            <Button
+              variant="outline"
+              disabled={!extractedName || applyMutation.isPending}
+              onClick={() => {
+                if (window.confirm("Apply the confirmed name and date to this patient record?")) applyMutation.mutate();
+              }}
+            >
+              Apply to patient record
+            </Button>
+          </div>
         )}
         {!running && !ocrError && doc.processing_status === "processed" && !doc.extracted_text && (
           <p className="mt-4 text-sm text-[#9C9490]">

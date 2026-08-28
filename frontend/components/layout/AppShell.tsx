@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,12 +15,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
+    } else if (!loading && user?.role === "receptionist") {
+      router.replace("/login?blocked=receptionist");
+    } else if (!loading && user?.role === "admin" && pathname !== "/dashboard") {
+      router.replace("/dashboard");
     }
-  }, [user, loading, router]);
+  }, [user, loading, pathname, router]);
 
   if (loading) {
     return (
@@ -41,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return null;
+  if (!user || user.role === "receptionist") return null;
 
   return (
     <div className="flex min-h-screen bg-[#FAF7F2]">

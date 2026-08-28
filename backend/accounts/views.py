@@ -6,7 +6,12 @@ from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .serializers import LoginSerializer, UserProfileSerializer
+from .models import User
+from .permissions import IsAdmin
+from .serializers import (
+    DoctorDirectorySerializer, LoginSerializer, PendingSignupSerializer,
+    SignupSerializer, UserProfileSerializer,
+)
 
 
 class LoginView(APIView):
@@ -48,6 +53,58 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class SignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {"detail": "Signup submitted. Your account is awaiting admin approval.", "user": PendingSignupSerializer(user).data},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class PendingSignupListView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        users = User.objects.filter(approval_status=User.ApprovalStatus.PENDING).order_by("date_joined")
+        return Response(PendingSignupSerializer(users, many=True).data)
+
+
+class PendingSignupActionView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, pk, action):
+        try:
+            user = User.objects.get(pk=pk, approval_status=User.ApprovalStatus.PENDING)
+        except User.DoesNotExist:
+            return Response({"detail": "Pending signup not found."}, status=status.HTTP_404_NOT_FOUND)
+        if action == "approve":
+            user.approval_status = User.ApprovalStatus.APPROVED
+            user.is_active = True
+            user.save(update_fields=["approval_status", "is_active"])
+            return Response(PendingSignupSerializer(user).data)
+        user.approval_status = User.ApprovalStatus.REJECTED
+        user.is_active = False
+        user.save(update_fields=["approval_status", "is_active"])
+        return Response(PendingSignupSerializer(user).data)
+
+
+class DoctorDirectoryView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        doctors = User.objects.filter(
+            role=User.Role.DOCTOR,
+            approval_status=User.ApprovalStatus.APPROVED,
+            is_active=True,
+        ).order_by("first_name", "last_name", "username")
+        return Response(DoctorDirectorySerializer(doctors, many=True).data)
 
 
 class LogoutView(APIView):

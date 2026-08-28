@@ -9,6 +9,7 @@ from accounts.permissions import IsAdmin, IsAdminOrReceptionist, IsDoctor
 from appointments.models import Appointment
 from .models import Family, Patient
 from .serializers import (
+    AddFamilyMemberSerializer,
     AddToFamilySerializer,
     FamilySerializer,
     PatientListSerializer,
@@ -183,7 +184,7 @@ class PatientViewSet(viewsets.ModelViewSet):
 #  Family views                                                                #
 # --------------------------------------------------------------------------- #
 
-class FamilyMembersView(viewsets.ReadOnlyModelViewSet):
+class FamilyMembersView(viewsets.ModelViewSet):
     """
     /api/families/
 
@@ -195,6 +196,21 @@ class FamilyMembersView(viewsets.ReadOnlyModelViewSet):
     queryset           = Family.objects.prefetch_related("members")
     serializer_class   = FamilySerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == "add_member":
+            return AddFamilyMemberSerializer
+        return FamilySerializer
+
+    @action(detail=True, methods=["post"], url_path="add-member")
+    def add_member(self, request, pk=None):
+        family = self.get_object()
+        serializer = AddFamilyMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        patient = serializer.validated_data["patient"]
+        patient.family = family
+        patient.save(update_fields=["family"])
+        return Response(FamilySerializer(family).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="members")
     def members(self, request, pk=None):

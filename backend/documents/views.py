@@ -4,6 +4,7 @@ import os
 
 import requests
 from django.conf import settings
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -12,6 +13,8 @@ from rest_framework.response import Response
 
 from .models import Document
 from .serializers import DocumentSerializer
+from appointments.models import Appointment
+from patients.models import Patient
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +78,29 @@ class DocumentViewSet(viewsets.ModelViewSet):
 				text = str(payload)
 
 			document.extracted_text = text
+			if isinstance(payload, dict):
+				document.extracted_name = payload.get("extracted_name") or None
+				document.extracted_date = payload.get("extracted_date") or None
+				document.extracted_age = payload.get("extracted_age") or None
+				document.extracted_medicines = payload.get("extracted_medicines") or []
+				document.extracted_amount = payload.get("extracted_amount") or None
 			document.processing_status = Document.ProcessingStatus.PROCESSED
-			document.save(update_fields=["extracted_text", "processing_status"])
-			return Response(self.get_serializer(document).data)
+			document.save(update_fields=["extracted_text", "extracted_name", "extracted_date", "extracted_age", "extracted_medicines", "extracted_amount", "processing_status"])
+
+			auto_update_message = "No matching appointment found for auto-update — please review manually."
+			name = (document.extracted_name or "").strip()
+			if name:
+				matches = Patient.objects.filter(full_name__iexact=name)
+				if matches.count() == 1:
+					appointments = Appointment.objects.filter(
+						patient=matches.first(), date=timezone.localdate(), status=Appointment.Status.SCHEDULED
+					)
+					if appointments.count() == 1:
+						appointments.update(status=Appointment.Status.COMPLETED)
+						auto_update_message = f"Appointment for {matches.first().full_name} marked completed"
+			data = self.get_serializer(document).data
+			data["auto_update_message"] = auto_update_message
+			return Response(data)
 		except Exception:
 			logger.exception("OCR failed for document %s", document.pk)
 			document.processing_status = Document.ProcessingStatus.NEEDS_REVIEW

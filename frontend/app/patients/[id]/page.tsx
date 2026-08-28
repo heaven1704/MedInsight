@@ -490,7 +490,7 @@ export default function PatientDetailPage() {
               )}
             </div>
             <p className="mt-1 text-sm text-[#9C9490]">
-              DOB {formatDate(patient.date_of_birth)} · {patient.phone}
+              DOB {formatDate(patient.date_of_birth)} · {patient.age == null ? "Age unknown" : `Age: ${patient.age}`} · {patient.phone || "No phone"}
               {patient.email && ` · ${patient.email}`}
             </p>
           </div>
@@ -512,7 +512,12 @@ export default function PatientDetailPage() {
           <div className="rounded-xl border border-[#E2D9D0] bg-white p-6">
             <dl className="space-y-4">
               <InfoRow label="Full Name"     value={patient.full_name} />
-              <InfoRow label="Date of Birth" value={formatDate(patient.date_of_birth)} />
+              <InfoRow
+                label="Date of Birth"
+                value={patient.date_of_birth
+                  ? `${formatDate(patient.date_of_birth)} (Age: ${patient.age})`
+                  : "Age unknown"}
+              />
               <InfoRow label="Gender"        value={<Badge variant="outline">{patient.gender}</Badge>} />
               <InfoRow label="Phone"         value={patient.phone} />
               <InfoRow label="Email"         value={patient.email || null} />
@@ -601,10 +606,10 @@ export default function PatientDetailPage() {
               full_name:       patient.full_name,
               date_of_birth:   patient.date_of_birth,
               gender:          patient.gender,
-              phone:           patient.phone,
-              email:           patient.email,
-              address:         patient.address,
-              blood_group:     patient.blood_group,
+              phone:          patient.phone ?? undefined,
+              email:          patient.email ?? undefined,
+              address:        patient.address ?? undefined,
+              blood_group:    patient.blood_group ?? undefined,
               allergies:       patient.allergies ?? "",
               medical_history: patient.medical_history ?? "",
             }}

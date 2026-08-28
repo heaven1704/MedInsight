@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, LayoutDashboard, Users, Calendar, FileText,
+  Activity, LayoutDashboard, Users, Calendar, FileText, Home,
   BarChart3, Settings, LogOut, ShieldCheck,
 } from "lucide-react";
 import { logout, useCurrentUser } from "@/lib/auth";
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: "/patients",  label: "Patients",  icon: Users },
   { href: "/appointments", label: "Appointments", icon: Calendar },
   { href: "/documents", label: "Documents", icon: FileText },
+  { href: "/families", label: "Families", icon: Home },
 ];
 
 const DISABLED_ITEMS = [
@@ -33,6 +34,9 @@ export function Sidebar() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const navItems = user?.role === "admin"
+    ? NAV_ITEMS.filter((item) => item.href === "/dashboard")
+    : NAV_ITEMS;
 
   async function handleLogout() {
     await logout();
@@ -56,7 +60,7 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const active =
             pathname === item.href || pathname.startsWith(item.href + "/");

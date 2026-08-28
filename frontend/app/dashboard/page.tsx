@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Users, CalendarCheck2, CheckCircle2, Clock, FileText,
   ChevronRight, AlertTriangle, Sparkles, UserRound, Activity,
@@ -11,6 +11,7 @@ import { api } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
 import type {
   DashboardSummary, AppointmentListItem, AppointmentStatus,
+  DoctorDirectoryItem, PendingSignup,
 } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -337,6 +338,54 @@ function ListCardSkeleton() {
   );
 }
 
+function PendingSignups() {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["pending-signups"],
+    queryFn: () => api.get<PendingSignup[]>("/api/auth/pending-signups/"),
+  });
+  const mutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "approve" | "reject" }) =>
+      api.post(`/api/auth/pending-signups/${id}/${action}/`, {}),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["pending-signups"] }),
+  });
+
+  return (
+    <Card title="Pending Signups">
+      {isLoading ? <p className="text-sm text-[#9C9490]">Loading requests…</p> : !data?.length ? <p className="text-sm text-[#9C9490]">No pending signup requests.</p> : <div className="space-y-2">
+        {data.map((signup) => (
+          <div key={signup.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E2D9D0] px-3 py-3">
+            <div>
+              <p className="text-sm font-medium text-[#3D3A38]">{signup.full_name}</p>
+              <p className="text-xs capitalize text-[#9C9490]">{signup.role} · {signup.email}</p>
+            </div>
+            <div className="flex gap-2">
+              <button className="rounded-md bg-[#6B8F71] px-3 py-1.5 text-xs font-medium text-white" onClick={() => mutation.mutate({ id: signup.id, action: "approve" })}>Approve</button>
+              <button className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700" onClick={() => mutation.mutate({ id: signup.id, action: "reject" })}>Reject</button>
+            </div>
+          </div>
+        ))}
+      </div>}
+    </Card>
+  );
+}
+
+function AdminDashboard() {
+  const { data: doctors = [], isLoading } = useQuery({
+    queryKey: ["doctor-directory"],
+    queryFn: () => api.get<DoctorDirectoryItem[]>("/api/auth/doctors/"),
+  });
+  return (
+    <div className="space-y-6">
+      <header className="space-y-1"><div className="flex items-center gap-2"><Activity className="h-5 w-5 text-[#C1674F]" /><h1 className="text-2xl font-semibold text-[#3D3A38]">Admin Dashboard</h1></div><p className="pl-7 text-sm text-[#9C9490]">Manage access requests and doctor contacts.</p></header>
+      <PendingSignups />
+      <Card title="Current Doctors">
+        {isLoading ? <p className="text-sm text-[#9C9490]">Loading doctors…</p> : doctors.length === 0 ? <p className="text-sm text-[#9C9490]">No approved doctors yet.</p> : <div className="space-y-2">{doctors.map((doctor) => <div key={doctor.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E2D9D0] px-4 py-3"><div><p className="font-medium text-[#3D3A38]">{doctor.full_name}</p><p className="text-sm text-[#9C9490]">{doctor.email} · @{doctor.username}</p></div><a href={`mailto:${doctor.email}`} className="rounded-md border border-[#E2D9D0] px-3 py-1.5 text-sm font-medium text-[#C1674F] hover:bg-[#FAF7F2]">Email doctor</a></div>)}</div>}
+      </Card>
+    </div>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -344,7 +393,10 @@ export default function DashboardPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: () => api.get<DashboardSummary>("/api/dashboard/summary/"),
+    enabled: user?.role === "doctor",
   });
+
+  if (user?.role === "admin") return <AdminDashboard />;
 
   const firstName = user?.full_name?.split(" ")[0] ?? "";
   const title = politeTitle(user?.role);

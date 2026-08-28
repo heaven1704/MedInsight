@@ -10,6 +10,7 @@ import { login } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -22,6 +23,12 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [blockedMessage] = useState<string | null>(() => (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("blocked") === "receptionist"
+      ? "Receptionist access is not available in this demo. Please use an admin or doctor account."
+      : null
+  ));
 
   const {
     register,
@@ -60,6 +67,11 @@ export default function LoginPage() {
             {serverError && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {serverError}
+              </div>
+            )}
+            {blockedMessage && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {blockedMessage}
               </div>
             )}
 
@@ -117,6 +129,9 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+          <p className="mt-5 text-center text-sm text-[#6B6460]">
+            Need an account? <Link href="/signup" className="font-medium text-[#C1674F] hover:underline">Request access</Link>
+          </p>
         </div>
 
         <p className="mt-6 text-center text-xs text-[#9C9490]">

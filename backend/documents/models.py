@@ -50,6 +50,11 @@ class Document(models.Model):
         default=ProcessingStatus.UPLOADED,
     )
     extracted_text = models.TextField(blank=True, default="")
+    extracted_name = models.CharField(max_length=255, blank=True, null=True)
+    extracted_date = models.DateField(blank=True, null=True)
+    extracted_age = models.PositiveIntegerField(blank=True, null=True)
+    extracted_medicines = models.JSONField(default=list, blank=True)
+    extracted_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
     class Meta:
         ordering = ["-uploaded_at"]

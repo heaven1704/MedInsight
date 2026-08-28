@@ -17,6 +17,12 @@ class FamilySerializer(serializers.ModelSerializer):
         return obj.members.count()
 
 
+class AddFamilyMemberSerializer(serializers.Serializer):
+    patient_id = serializers.PrimaryKeyRelatedField(
+        queryset=Patient.objects.all(), source="patient"
+    )
+
+
 class PatientSerializer(serializers.ModelSerializer):
     """
     Full patient serializer used for retrieve / create / update.
@@ -28,6 +34,8 @@ class PatientSerializer(serializers.ModelSerializer):
     """
 
     family_detail = FamilySerializer(source="family", read_only=True)
+    age           = serializers.SerializerMethodField()
+    last_visited  = serializers.SerializerMethodField()
 
     class Meta:
         model  = Patient
@@ -44,10 +52,18 @@ class PatientSerializer(serializers.ModelSerializer):
             "medical_history",
             "family",
             "family_detail",
+            "age",
+            "last_visited",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at", "family_detail")
+        read_only_fields = ("id", "created_at", "updated_at", "family_detail", "age", "last_visited")
+
+    def get_age(self, obj):
+        return obj.age
+
+    def get_last_visited(self, obj):
+        return obj.last_visited
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -69,6 +85,8 @@ class PatientListSerializer(serializers.ModelSerializer):
     """
 
     last_visit   = serializers.SerializerMethodField()
+    last_visited = serializers.SerializerMethodField()
+    age          = serializers.SerializerMethodField()
     family_name  = serializers.CharField(source="family.family_name", read_only=True, default=None)
 
     class Meta:
@@ -84,6 +102,8 @@ class PatientListSerializer(serializers.ModelSerializer):
             "family",
             "family_name",
             "last_visit",
+            "last_visited",
+            "age",
         )
 
     def get_last_visit(self, obj):
@@ -92,6 +112,21 @@ class PatientListSerializer(serializers.ModelSerializer):
         # which would bypass the prefetch cache and cause an N+1.
         appts = list(obj.appointments.all())
         return appts[0].date if appts else None
+
+    def get_last_visited(self, obj):
+        # Appointments are prefetched sorted date/time-desc, so the first
+        # completed one in that list is the most recent completed visit.
+        # Falls back to the model property for non-prefetched contexts.
+        cache = getattr(obj, "_prefetched_objects_cache", None)
+        if cache and "appointments" in cache:
+            for a in cache["appointments"]:
+                if a.status == "completed":
+                    return a.date
+            return None
+        return obj.last_visited
+
+    def get_age(self, obj):
+        return obj.age
 
 
 class AddToFamilySerializer(serializers.Serializer):

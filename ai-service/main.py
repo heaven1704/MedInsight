@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -25,6 +26,51 @@ MAX_PDF_PAGES = 5
 ALLOWED_SUFFIXES = {".pdf", ".jpg", ".jpeg", ".png"}
 
 _ocr = None
+
+
+def parse_structured_fields(text: str) -> dict:
+    """Extract a small, reviewable set of fields using deterministic rules."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    result = {
+        "extracted_name": None,
+        "extracted_date": None,
+        "extracted_age": None,
+        "extracted_medicines": [],
+        "extracted_amount": None,
+    }
+
+    for index, line in enumerate(lines):
+        name_match = re.match(r"(?:patient\s*)?(?:name)\s*[:#-]\s*(.+)$", line, re.I)
+        if name_match:
+            result["extracted_name"] = name_match.group(1).strip()
+        if result["extracted_name"] is None and re.search(r"patient\s*[:#-]", line, re.I):
+            result["extracted_name"] = re.split(r"[:#-]", line, maxsplit=1)[1].strip()
+
+        date_match = re.search(r"\b(\d{1,4}[-/]\d{1,2}[-/]\d{1,4})\b", line)
+        if date_match and result["extracted_date"] is None:
+            raw_date = date_match.group(1).replace("/", "-")
+            parts = raw_date.split("-")
+            if len(parts[0]) == 4:
+                result["extracted_date"] = raw_date
+            else:
+                result["extracted_date"] = f"{parts[2]}-{int(parts[1]):02d}-{int(parts[0]):02d}"
+
+        age_match = re.search(r"(?:age|yrs?|years?\s*old)\s*[:#-]?\s*(\d{1,3})", line, re.I)
+        if age_match:
+            result["extracted_age"] = int(age_match.group(1))
+
+        amount_match = re.search(r"(?:total|amount|grand\s*total)\s*[:#-]?\s*(?:₹|rs\.?|\$)?\s*([\d,]+(?:\.\d{1,2})?)", line, re.I)
+        if amount_match:
+            result["extracted_amount"] = float(amount_match.group(1).replace(",", ""))
+
+        medicine_match = re.match(r"(?:[-*]\s*)?([A-Za-z][A-Za-z0-9 /+.-]{1,60}?)\s+(\d+(?:\.\d+)?\s*(?:mg|ml|mcg|g|tablet[s]?|capsule[s]?)\b.*)$", line, re.I)
+        if medicine_match and not re.search(r"(?:total|amount|age|date|patient|name)", line, re.I):
+            result["extracted_medicines"].append({
+                "name": medicine_match.group(1).strip(" :-"),
+                "dose": medicine_match.group(2).strip(),
+            })
+
+    return result
 
 
 def get_ocr():
@@ -146,7 +192,7 @@ async def extract(file: UploadFile = File(...)):
         pages = _pil_pages_from_upload(filename, data)
         chunks = [_ocr_image(page) for page in pages]
         text = "\n\n".join(chunk for chunk in chunks if chunk)
-        return JSONResponse({"text": text})
+        return JSONResponse({"text": text, **parse_structured_fields(text)})
     except HTTPException:
         raise
     except Exception:

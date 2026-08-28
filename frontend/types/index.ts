@@ -8,6 +8,19 @@ export interface CurrentUser {
   email: string;
   full_name: string;
   role: UserRole;
+  approval_status?: "pending" | "approved" | "rejected";
+}
+
+export interface PendingSignup extends CurrentUser {
+  date_joined: string;
+}
+
+export interface DoctorDirectoryItem {
+  id: number;
+  username: string;
+  email: string;
+  full_name: string;
+  role: "doctor";
 }
 
 export interface AuthTokens {
@@ -36,16 +49,18 @@ export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
 export interface Patient {
   id: number;
   full_name: string;
-  date_of_birth: string;       // ISO date  "YYYY-MM-DD"
+  date_of_birth: string | null;  // ISO date "YYYY-MM-DD" or null when not set
   gender: Gender;
-  phone: string;
-  email: string;
-  address: string;
-  blood_group: BloodGroup;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  blood_group: BloodGroup | null;
   allergies: string | null;    // null when clinical access is restricted
   medical_history: string | null;
   family: number | null;       // FK id
   family_detail: Family | null;
+  age: number | null;          // computed from date_of_birth
+  last_visited: string | null; // most recent completed appointment date
   created_at: string;
   updated_at: string;
 }
@@ -54,14 +69,16 @@ export interface Patient {
 export interface PatientListItem {
   id: number;
   full_name: string;
-  date_of_birth: string;
+  date_of_birth: string | null;
   gender: Gender;
   phone: string;
   email: string;
-  blood_group: BloodGroup;
+  blood_group: BloodGroup | null;
   family: number | null;
   family_name: string | null;
   last_visit: string | null;
+  last_visited: string | null;
+  age: number | null;
 }
 
 // ── Paginated response wrapper ─────────────────────────────────────────────
@@ -77,7 +94,7 @@ export interface PaginatedResponse<T> {
 
 export interface PatientFormValues {
   full_name: string;
-  date_of_birth: string;
+  date_of_birth: string | null;
   gender: Gender;
   phone: string;
   email: string;
@@ -159,6 +176,12 @@ export interface Document {
   uploaded_at: string;
   processing_status: ProcessingStatus;
   extracted_text: string;
+  extracted_name: string | null;
+  extracted_date: string | null;
+  extracted_age: number | null;
+  extracted_medicines: { name: string; dose: string }[];
+  extracted_amount: string | null;
+  auto_update_message?: string;
 }
 
 // ── Dashboard ────────────────────────────────────────────────────────────────

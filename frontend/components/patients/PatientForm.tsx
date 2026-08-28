@@ -10,18 +10,18 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { Patient, PatientFormValues } from "@/types";
+import type { PatientFormValues } from "@/types";
 
 // ── Zod schema ─────────────────────────────────────────────────────────────
 
 const patientSchema = z.object({
   full_name:       z.string().min(2, "Full name must be at least 2 characters"),
-  date_of_birth:   z.string().min(1, "Date of birth is required"),
+  date_of_birth:   z.string().nullish(),
   gender:          z.enum(["male", "female", "other"], { message: "Select a gender" }),
-  phone:           z.string().min(7, "Phone number is too short").max(20),
+  phone:           z.string().nullish(),
   email:           z.string().email("Invalid email address").or(z.literal("")).default(""),
   address:         z.string().default(""),
-  blood_group:     z.enum(["A+","A-","B+","B-","AB+","AB-","O+","O-","unknown"]),
+  blood_group:     z.enum(["A+","A-","B+","B-","AB+","AB-","O+","O-","unknown"]).nullish(),
   allergies:       z.string().default(""),
   medical_history: z.string().default(""),
 });
@@ -53,7 +53,7 @@ export function PatientForm({
   } = useForm<PatientFormSchema, unknown, PatientFormSchema>({
     resolver: zodResolver(patientSchema) as never,
     defaultValues: {
-      blood_group: "unknown",
+      blood_group: undefined,
       gender: "male",
       email: "",
       address: "",
@@ -64,7 +64,17 @@ export function PatientForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+    <form
+      onSubmit={handleSubmit((values) =>
+        onSubmit({
+          ...values,
+          date_of_birth: values.date_of_birth || null,
+          phone: values.phone ?? "",
+        })
+      )}
+      className="space-y-6"
+      noValidate
+    >
 
       {/* ── Personal Information ─────────────────────────────────────── */}
       <fieldset className="space-y-4">
@@ -89,7 +99,7 @@ export function PatientForm({
 
           {/* Date of birth */}
           <div className="space-y-1.5">
-            <Label htmlFor="date_of_birth">Date of Birth *</Label>
+            <Label htmlFor="date_of_birth">Date of Birth</Label>
             <Input
               id="date_of_birth"
               type="date"
@@ -124,7 +134,7 @@ export function PatientForm({
 
           {/* Phone */}
           <div className="space-y-1.5">
-            <Label htmlFor="phone">Phone *</Label>
+            <Label htmlFor="phone">Phone</Label>
             <Input
               id="phone"
               type="tel"
@@ -175,11 +185,11 @@ export function PatientForm({
           <div className="space-y-1.5">
             <Label htmlFor="blood_group">Blood Group</Label>
             <Select
-              defaultValue={defaultValues?.blood_group ?? "unknown"}
+              defaultValue={defaultValues?.blood_group ?? undefined}
               onValueChange={(v) => setValue("blood_group", v as PatientFormSchema["blood_group"])}
             >
               <SelectTrigger id="blood_group">
-                <SelectValue placeholder="Select blood group" />
+                <SelectValue placeholder="Select blood group (optional)" />
               </SelectTrigger>
               <SelectContent>
                 {["A+","A-","B+","B-","AB+","AB-","O+","O-","unknown"].map((bg) => (

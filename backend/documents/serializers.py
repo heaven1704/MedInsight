@@ -18,6 +18,11 @@ class DocumentSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "processing_status",
             "extracted_text",
+            "extracted_name",
+            "extracted_date",
+            "extracted_age",
+            "extracted_medicines",
+            "extracted_amount",
         )
         read_only_fields = ("id", "uploaded_at", "processing_status", "extracted_text")
 
