@@ -138,3 +138,25 @@ export interface AppointmentFormValues {
   reason: string;
   status: AppointmentStatus;
 }
+
+// ── Documents ──────────────────────────────────────────────────────────────
+
+export type DocumentType =
+  | "prescription"
+  | "lab_report"
+  | "invoice"
+  | "medical_record"
+  | "other";
+
+export type ProcessingStatus = "uploaded" | "processing" | "processed" | "needs_review";
+
+export interface Document {
+  id: number;
+  patient: number;
+  file: string;
+  document_type: DocumentType;
+  tags: string;
+  uploaded_at: string;
+  processing_status: ProcessingStatus;
+  extracted_text: string;
+}

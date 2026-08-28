@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Users, Activity, Calendar } from "lucide-react";
+import { FileText, LogOut, Users, Activity, Calendar } from "lucide-react";
 import { logout } from "@/lib/auth";
 import { useCurrentUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,13 @@ export function Navbar() {
           >
             <Calendar className="h-4 w-4" />
             Appointments
+          </Link>
+          <Link
+            href="/documents"
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-[#6B6460] hover:bg-[#F2EDE4] hover:text-[#3D3A38] transition-colors"
+          >
+            <FileText className="h-4 w-4" />
+            Documents
           </Link>
         </nav>
 

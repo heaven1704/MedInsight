@@ -9,8 +9,17 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ("id", "patient", "file", "document_type", "tags", "uploaded_at", "processing_status")
-        read_only_fields = ("id", "uploaded_at", "processing_status")
+        fields = (
+            "id",
+            "patient",
+            "file",
+            "document_type",
+            "tags",
+            "uploaded_at",
+            "processing_status",
+            "extracted_text",
+        )
+        read_only_fields = ("id", "uploaded_at", "processing_status", "extracted_text")
 
     def validate_file(self, f):
         # Validate extension

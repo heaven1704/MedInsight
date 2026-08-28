@@ -12,8 +12,8 @@ class Document(models.Model):
     """
     A file (PDF, image, etc.) attached to a Patient record.
 
-    processing_status is included now so that a future OCR / AI service
-    can update the field without requiring a schema migration later.
+    processing_status tracks OCR: uploaded → processed, or needs_review on failure.
+    extracted_text stores the raw OCR string from ai-service (no structured fields).
     """
 
     class DocumentType(models.TextChoices):
@@ -49,6 +49,7 @@ class Document(models.Model):
         choices=ProcessingStatus.choices,
         default=ProcessingStatus.UPLOADED,
     )
+    extracted_text = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["-uploaded_at"]

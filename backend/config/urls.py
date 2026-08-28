@@ -11,6 +11,7 @@ Step 3:  /api/auth/     — JWT token obtain/refresh/verify + custom auth endpoi
 Step 4:  /api/patients/ — Patient CRUD
 Step 4:  /api/appointments/ — Appointment CRUD
 Step 4:  /api/documents/    — Document upload / retrieval
+Step 8:  POST /api/documents/{id}/run-ocr/ — synchronous OCR via ai-service
 """
 
 from django.contrib import admin

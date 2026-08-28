@@ -181,6 +181,11 @@ SIMPLE_JWT = {
 # is built (planned for a later step).
 ENFORCE_CLINICAL_ACCESS = os.getenv("ENFORCE_CLINICAL_ACCESS", "False") == "True"
 
+# Lightweight OCR microservice (ai-service). Docker Compose overrides this to
+# http://ai-service:8001; local Django talking to a published container uses localhost.
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8001")
+AI_SERVICE_TIMEOUT = int(os.getenv("AI_SERVICE_TIMEOUT", "180"))
+
 # ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------

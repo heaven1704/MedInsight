@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, getAccessToken } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import type { Document } from "@/types";
 
 export default function DocumentsSection({ patientId }: { patientId?: number | string }) {
   const queryClient = useQueryClient();
@@ -27,7 +29,7 @@ export default function DocumentsSection({ patientId }: { patientId?: number | s
     queryKey: ["patient-documents", selectedPatient],
     queryFn: () => {
       const qs = selectedPatient ? `?patient=${selectedPatient}` : "";
-      return api.get(`/api/documents/${qs}`);
+      return api.get<{ results: Document[] } | Document[]>(`/api/documents/${qs}`);
     },
     enabled: !!selectedPatient,
   });
@@ -114,17 +116,21 @@ export default function DocumentsSection({ patientId }: { patientId?: number | s
       {error && <div className="text-sm text-red-700">{error}</div>}
 
       <div className="space-y-2">
-        {(documents?.results ?? documents ?? []).map((d: any) => (
-          <div key={d.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
+        {(Array.isArray(documents) ? documents : documents?.results ?? []).map((d) => (
+          <Link
+            key={d.id}
+            href={`/documents/${d.id}`}
+            className="flex items-center justify-between rounded-lg border px-3 py-2 hover:bg-[#FAF7F2] transition-colors"
+          >
             <div>
               <div className="text-sm font-medium">{d.document_type.replace("_", " ")}</div>
-              <div className="text-xs text-gray-500">{d.tags}</div>
+              <div className="text-xs text-[#9C9490]">{d.tags || "Open to run OCR"}</div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-600">{new Date(d.uploaded_at).toLocaleString()}</div>
-              <Badge>{d.processing_status}</Badge>
+              <div className="text-sm text-[#6B6460]">{new Date(d.uploaded_at).toLocaleString()}</div>
+              <Badge>{d.processing_status.replace("_", " ")}</Badge>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
