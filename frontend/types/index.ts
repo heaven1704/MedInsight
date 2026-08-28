@@ -160,3 +160,35 @@ export interface Document {
   processing_status: ProcessingStatus;
   extracted_text: string;
 }
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+
+/** Lightweight document row surfaced on the dashboard (with OCR status). */
+export interface DashboardRecentDocument {
+  id: number;
+  patient_id: number;
+  patient_name: string;
+  document_type: DocumentType;
+  file: string | null;
+  uploaded_at: string;
+  processing_status: ProcessingStatus;
+}
+
+/** A patient with unresolved family-grouping matches (same phone/address). */
+export interface FamilySuggestion {
+  id: number;
+  full_name: string;
+  phone: string;
+  match_count: number;
+  match_names: string[];
+}
+
+export interface DashboardSummary {
+  total_patients: number;
+  todays_appointments_count: number;
+  completed_appointments_count: number;
+  pending_appointments_count: number;
+  recent_patients: PatientListItem[];
+  recent_documents: DashboardRecentDocument[];
+  family_suggestions: FamilySuggestion[];
+}

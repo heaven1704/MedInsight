@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.permissions import IsAdmin, IsAdminOrReceptionist, IsDoctor
+from appointments.models import Appointment
 from .models import Family, Patient
 from .serializers import (
     AddToFamilySerializer,
@@ -19,6 +20,14 @@ class PatientPagination(PageNumberPagination):
     page_size            = 20
     page_size_query_param = "page_size"
     max_page_size        = 100
+
+
+# Prefetch appointments newest-first so PatientListSerializer.get_last_visit
+# can pick the latest appointment straight from the cache (no N+1).
+APPOINTMENTS_PREFETCH = Prefetch(
+    "appointments",
+    queryset=Appointment.objects.order_by("-date", "-time"),
+)
 
 
 class PatientViewSet(viewsets.ModelViewSet):
@@ -43,7 +52,7 @@ class PatientViewSet(viewsets.ModelViewSet):
          Creates or joins a Family record linking both patients.
     """
 
-    queryset           = Patient.objects.select_related("family").prefetch_related("appointments")
+    queryset           = Patient.objects.select_related("family").prefetch_related(APPOINTMENTS_PREFETCH)
     pagination_class   = PatientPagination
     filter_backends    = [filters.SearchFilter, filters.OrderingFilter]
     search_fields      = ["full_name", "phone", "email"]
@@ -81,7 +90,11 @@ class PatientViewSet(viewsets.ModelViewSet):
         """
         patient = self.get_object()
 
-        qs = Patient.objects.exclude(pk=patient.pk)
+        qs = (
+            Patient.objects.select_related("family")
+            .prefetch_related(APPOINTMENTS_PREFETCH)
+            .exclude(pk=patient.pk)
+        )
 
         # Build the similarity filter
         similarity_q = Q()
@@ -190,6 +203,6 @@ class FamilyMembersView(viewsets.ReadOnlyModelViewSet):
         Returns the full patient list for a family group.
         """
         family = self.get_object()
-        patients = family.members.select_related("family").prefetch_related("appointments")
+        patients = family.members.select_related("family").prefetch_related(APPOINTMENTS_PREFETCH)
         serializer = PatientListSerializer(patients, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)

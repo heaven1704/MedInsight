@@ -1,0 +1,41 @@
+Id,BIRTHDATE,DEATHDATE,SSN,DRIVERS,PASSPORT,PREFIX,FIRST,LAST,SUFFIX,MAIDEN,MARITAL,RACE,ETHNICITY,GENDER,BIRTHPLACE,ADDRESS,CITY,STATE,ZIP,HEALTHCARE_EXPENSES,HEALTHCARE_COVERAGE
+SYNTH0001,20240319,,585-36-9076,DL550549,,,Kritika,Bose,,,M,asian,hispanic,F,"Delhi, TS",40 Green Park,Kolkata,MH,426072,15234,30
+SYNTH0002,20180512,,615-63-9098,DL384483,,,Kritika,Verma,,,S,other,nonhispanic,F,"Mumbai, MH",40 Green Park,Kolkata,MH,438535,28398,25
+SYNTH0003,20201020,,251-81-3743,DL898828,,,Sanjay,Agarwal,,,M,white,nonhispanic,M,"Mumbai, GJ",12 MG Road,Hyderabad,DL,455585,55257,49
+SYNTH0004,20141017,,293-95-5508,DL782823,,,Riya,Malhotra,,,S,hispanic,nonhispanic,F,"Kolkata, KA",12 MG Road,Hyderabad,DL,465585,37862,79
+SYNTH0005,20121227,,699-10-6015,DL170959,,,Rohan,Bose,,,D,hispanic,hispanic,M,"Ahmedabad, GJ",45 Hill View Lane,Mumbai,KA,465986,61986,49
+SYNTH0006,20120802,,920-71-7516,DL142906,,,Meera,Bhat,,,D,black,hispanic,F,"Hyderabad, MH",45 Hill View Lane,Mumbai,KA,462854,22650,64
+SYNTH0007,19910625,,621-98-5731,DL268707,,,Kritika,Kulkarni,,,D,black,hispanic,F,"Mumbai, DL",45 Hill View Lane,Mumbai,KA,412726,27365,64
+SYNTH0008,19990316,,989-10-8692,DL866857,,,Mohit,Ghosh,,,S,white,hispanic,M,"Ahmedabad, MH",6 Maple Court,Mumbai,GJ,417133,84751,80
+SYNTH0009,19931017,,140-72-2251,DL992431,,,Vidya,Agarwal,,,M,white,nonhispanic,F,"Chennai, GJ",33 River View Road,Pune,DL,400766,11559,93
+SYNTH0010,20040626,,735-10-7550,DL934484,,,Sanjay,Ghosh,,,W,asian,nonhispanic,M,"Mumbai, TS",9 Cedar Lane,Chennai,MH,432284,49222,73
+SYNTH0011,19951208,,218-44-6720,DL594461,,,Divya,Agarwal,,,S,black,hispanic,F,"Mumbai, DL",33 River View Road,Mumbai,WB,403493,60443,31
+SYNTH0012,20041003,,751-80-8973,DL219983,,,Neha,Bhat,,,W,other,nonhispanic,F,"Delhi, WB",15 Silver Oak,Chennai,WB,476621,67248,57
+SYNTH0013,20031109,,883-99-5584,DL890332,,,Sanjay,Reddy,,,D,black,hispanic,M,"Bengaluru, MH",56 Palm Grove,Delhi,WB,429334,67672,39
+SYNTH0014,20080416,,753-78-2258,DL679286,,,Ruchika,Joshi,,,M,asian,nonhispanic,F,"Hyderabad, MH",56 Palm Grove,Delhi,WB,413535,24145,47
+SYNTH0015,19780922,,658-36-1386,DL649052,,,Vikram,Bose,,,S,hispanic,nonhispanic,M,"Kolkata, TN",9 Cedar Lane,Bengaluru,TS,427653,54356,58
+SYNTH0016,19740127,,823-21-2545,DL246802,,,Priya,Agarwal,,,S,black,nonhispanic,F,"Mumbai, TN",8 Rose Garden Colony,Kolkata,KA,456876,47106,60
+SYNTH0017,19841104,,664-69-6544,DL657317,,,Ritu,Bose,,,W,white,hispanic,F,"Hyderabad, KA",56 Palm Grove,Delhi,DL,480535,6443,46
+SYNTH0018,19790808,,823-75-4202,DL138073,,,Karan,Ghosh,,,W,black,nonhispanic,M,"Delhi, DL",9 Cedar Lane,Chennai,WB,431896,37762,71
+SYNTH0019,19810114,,728-44-6950,DL920312,,,Ananya,Rao,,,M,white,hispanic,F,"Bengaluru, WB",6 Maple Court,Bengaluru,TN,403706,35882,30
+SYNTH0020,19851023,,862-15-1424,DL542241,,,Sanjay,Singh,,,S,black,nonhispanic,M,"Chennai, MH",22 Blue Hills,Ahmedabad,MH,435632,73105,31
+SYNTH0021,19880814,,769-48-7698,DL904275,,,Sakshi,Rao,,,M,other,hispanic,F,"Hyderabad, GJ",56 Palm Grove,Kolkata,WB,480652,23165,23
+SYNTH0022,19770426,,991-50-5975,DL442687,,,Ruchika,Gupta,,,D,other,hispanic,F,"Bengaluru, MH",4 Temple Street,Bengaluru,GJ,430826,16502,95
+SYNTH0023,19721120,,691-13-3606,DL728982,,,Harsh,Kumar,,,D,hispanic,nonhispanic,M,"Delhi, MH",33 River View Road,Pune,GJ,478887,48761,63
+SYNTH0024,19850625,,732-77-7120,DL940132,,,Nandini,Patel,,,M,hispanic,nonhispanic,F,"Delhi, GJ",27 Park Avenue,Kolkata,DL,400004,43030,68
+SYNTH0025,19800227,,124-72-2519,DL723034,,,Siddharth,Pillai,,,M,black,hispanic,M,"Chennai, WB",6 Maple Court,Mumbai,GJ,453286,20417,75
+SYNTH0026,19790321,,677-85-9557,DL940932,,,Anjali,Iyer,,,S,black,nonhispanic,F,"Pune, GJ",22 Blue Hills,Ahmedabad,TS,471936,75789,82
+SYNTH0027,19600407,,357-73-8072,DL450756,,,Pooja,Reddy,,,S,white,hispanic,F,"Chennai, MH",10 Sunrise Apartments,Chennai,TS,401865,45123,20
+SYNTH0028,19601215,,686-87-6063,DL260081,,,Sanjay,Pillai,,,S,white,hispanic,M,"Ahmedabad, WB",40 Green Park,Delhi,GJ,475816,59486,92
+SYNTH0029,19560525,,730-75-4171,DL644794,,,Kavya,Joshi,,,D,other,nonhispanic,F,"Hyderabad, GJ",4 Temple Street,Ahmedabad,DL,478037,51005,85
+SYNTH0030,19540614,,621-97-8003,DL346645,,,Vikram,Chopra,,,W,black,hispanic,M,"Chennai, TS",19 Gandhi Nagar,Kolkata,TS,445772,25261,40
+SYNTH0031,19641117,,179-99-7662,DL256487,,,Sakshi,Bhat,,,S,asian,hispanic,F,"Chennai, KA",15 Silver Oak,Hyderabad,GJ,465146,37863,55
+SYNTH0032,19540623,,767-55-1553,DL858678,,,Neha,Desai,,,M,black,nonhispanic,F,"Mumbai, WB",9 Cedar Lane,Pune,TS,464582,10295,48
+SYNTH0033,19691203,,873-28-9940,DL885963,,,Amit,Mishra,,,W,asian,nonhispanic,M,"Ahmedabad, WB",40 Green Park,Delhi,TN,480196,69646,63
+SYNTH0034,19600622,,946-99-7945,DL891444,,,Tanvi,Joshi,,,W,hispanic,hispanic,F,"Hyderabad, KA",9 Cedar Lane,Bengaluru,GJ,471980,24855,73
+SYNTH0035,19631025,,621-81-5925,DL609652,,,Sunil,Rao,,,S,white,hispanic,M,"Bengaluru, TS",9 Cedar Lane,Pune,MH,434876,81648,87
+SYNTH0036,19590511,,915-31-1578,DL500415,,,Aarohi,Nair,,,W,asian,nonhispanic,F,"Chennai, KA",56 Palm Grove,Bengaluru,MH,448051,36926,85
+SYNTH0037,19500306,,995-43-6446,DL895444,,,Ananya,Agarwal,,,S,hispanic,nonhispanic,F,"Delhi, KA",56 Palm Grove,Bengaluru,TS,435465,64799,36
+SYNTH0038,19390718,,162-57-8157,DL441999,,,Amit,Mehta,,,S,other,hispanic,M,"Hyderabad, GJ",45 Hill View Lane,Delhi,WB,476340,60009,30
+SYNTH0039,19451101,,501-14-9230,DL481021,,,Sneha,Rao,,,M,other,nonhispanic,F,"Delhi, MH",6 Maple Court,Chennai,MH,475554,66681,30
+SYNTH0040,19491001,,663-76-1904,DL529032,,,Ravi,Iyer,,,S,white,nonhispanic,M,"Hyderabad, KA",4 Temple Street,Ahmedabad,TS,472204,53916,41

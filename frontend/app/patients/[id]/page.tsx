@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft, Calendar, FileText, Users, UserRound,
+  ArrowLeft, Calendar, Users, UserRound,
   AlertTriangle, CheckCircle2, Pencil, Trash2, Loader2, X,
   Clock, CheckCircle, XCircle, MinusCircle, Plus,
 } from "lucide-react";
@@ -244,6 +244,8 @@ function FamilyTab({ patient }: { patient: Patient }) {
       queryClient.invalidateQueries({ queryKey: ["patient", patient.id] });
       queryClient.invalidateQueries({ queryKey: ["possible-family", patient.id] });
       queryClient.invalidateQueries({ queryKey: ["family-members"] });
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
     },
   });
 
@@ -369,7 +371,7 @@ function FamilyTab({ patient }: { patient: Patient }) {
             <div>
               <p className="text-sm font-medium text-[#3D3A38]">No family group</p>
               <p className="mt-1 text-xs text-[#9C9490]">
-                No patients share this patient's phone number or address.
+                No patients share this patient&apos;s phone number or address.
               </p>
             </div>
           </div>
@@ -383,6 +385,7 @@ function FamilyTab({ patient }: { patient: Patient }) {
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router  = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
   const [editOpen,   setEditOpen]   = useState(false);
@@ -432,6 +435,10 @@ export default function PatientDetailPage() {
       </div>
     );
   }
+
+  const VALID_TABS = ["info", "medical", "appointments", "documents", "family"];
+  const requestedTab = searchParams.get("tab");
+  const initialTab: string = VALID_TABS.includes(requestedTab ?? "") ? (requestedTab as string) : "info";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -491,7 +498,7 @@ export default function PatientDetailPage() {
       </div>
 
       {/* ── Tabs ───────────────────────────────────────────────────── */}
-      <Tabs defaultValue="info">
+      <Tabs defaultValue={initialTab}>
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="info">Patient Information</TabsTrigger>
           <TabsTrigger value="medical">Medical History</TabsTrigger>
@@ -580,7 +587,7 @@ export default function PatientDetailPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Patient</DialogTitle>
-            <DialogDescription>Update {patient.full_name}'s information.</DialogDescription>
+            <DialogDescription>Update {patient.full_name}&apos;s information.</DialogDescription>
           </DialogHeader>
           {updateMutation.isError && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

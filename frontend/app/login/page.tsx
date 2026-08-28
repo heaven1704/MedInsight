@@ -33,7 +33,7 @@ export default function LoginPage() {
     setServerError(null);
     try {
       await login(values.username, values.password);
-      router.push("/patients");
+      router.push("/dashboard");
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : "Login failed");
     }

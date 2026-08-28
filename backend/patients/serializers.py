@@ -87,8 +87,11 @@ class PatientListSerializer(serializers.ModelSerializer):
         )
 
     def get_last_visit(self, obj):
-        appt = obj.appointments.order_by("-date", "-time").first()
-        return appt.date if appt else None
+        # Consume the prefetched (already date/time-desc sorted) appointment
+        # set rather than running a fresh .order_by().first() query per row,
+        # which would bypass the prefetch cache and cause an N+1.
+        appts = list(obj.appointments.all())
+        return appts[0].date if appts else None
 
 
 class AddToFamilySerializer(serializers.Serializer):

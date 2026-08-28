@@ -10,6 +10,7 @@ import type { Document } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate } from "@/lib/utils";
 
 const TYPE_LABELS: Record<string, string> = {
   prescription: "Prescription",
@@ -17,6 +18,13 @@ const TYPE_LABELS: Record<string, string> = {
   invoice: "Invoice",
   medical_record: "Medical Record",
   other: "Other",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  uploaded: "Uploaded",
+  processing: "Processing",
+  processed: "Processed",
+  needs_review: "Needs review",
 };
 
 function isImageFile(url: string) {
@@ -103,7 +111,7 @@ export default function DocumentDetailPage() {
             <div>
               <h1 className="text-xl font-semibold text-[#3D3A38]">{typeLabel}</h1>
               <p className="mt-1 text-sm text-[#9C9490]">
-                Uploaded {new Date(doc.uploaded_at).toLocaleString()}
+                Uploaded {formatDate(doc.uploaded_at)}
                 {doc.tags ? ` · ${doc.tags}` : ""}
               </p>
               <div className="mt-2">
@@ -116,7 +124,7 @@ export default function DocumentDetailPage() {
                         : "muted"
                   }
                 >
-                  {doc.processing_status.replace("_", " ")}
+                  {STATUS_LABELS[doc.processing_status] ?? doc.processing_status.replace("_", " ")}
                 </Badge>
               </div>
             </div>

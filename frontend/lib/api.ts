@@ -68,13 +68,19 @@ async function refreshAccessToken(): Promise<string | null> {
 
 interface ApiOptions extends RequestInit {
   skipAuth?: boolean;
+  /** Abort the request (and surface a readable timeout error) after this many ms. */
+  timeoutMs?: number;
 }
+
+// API requests should never hang the UI indefinitely — this is especially
+// important for slow/down services (e.g. OCR) so a button never appears stuck.
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 export async function apiFetch<T = unknown>(
   path: string,
   options: ApiOptions = {}
 ): Promise<T> {
-  const { skipAuth = false, ...fetchOptions } = options;
+  const { skipAuth = false, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
 
   const headers = new Headers(fetchOptions.headers);
   headers.set("Content-Type", "application/json");
@@ -84,10 +90,26 @@ export async function apiFetch<T = unknown>(
     if (token) headers.set("Authorization", `Bearer ${token}`);
   }
 
-  let res = await fetch(`${BASE_URL}${path}`, {
-    ...fetchOptions,
-    headers,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const signal = fetchOptions.signal ? AbortSignal.any([fetchOptions.signal, controller.signal]) : controller.signal;
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...fetchOptions,
+      headers,
+      signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if ((err as Error)?.name === "AbortError") {
+      throw new Error("The request timed out. Please try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   // Auto-refresh on 401 then retry once
   if (res.status === 401 && !skipAuth) {

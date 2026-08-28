@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Root → redirect to patients list (auth guard is in the patients layout)
+// Root → redirect to the landing dashboard (auth guard is in the AppShell)
 export default function Home() {
-  redirect("/patients");
+  redirect("/dashboard");
 }
