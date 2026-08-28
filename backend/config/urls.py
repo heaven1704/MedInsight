@@ -25,7 +25,9 @@ urlpatterns = [
     # Step 4: Patient & Family endpoints
     path("api/", include("patients.urls")),
 
-    # TODO Step 4 (remaining): appointments and documents
-    #   path("api/appointments/",  include("appointments.urls")),
-    #   path("api/documents/",     include("documents.urls")),
+    # Step 6: Appointments
+    path("api/", include("appointments.urls")),
+
+    # TODO Step 7: documents
+    #   path("api/", include("documents.urls")),
 ]
