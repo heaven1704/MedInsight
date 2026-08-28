@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/* ── MedInsight Design Tokens ──────────────────────────────────────────── */
+@theme inline {
+  /* Palette */
+  --color-cream:         #FAF7F2;
+  --color-cream-dark:    #F2EDE4;
+  --color-terracotta:    #C1674F;
+  --color-terracotta-dark: #A8523C;
+  --color-terracotta-light: #D4896F;
+  --color-sage:          #6B8F71;
+  --color-sage-dark:     #527A59;
+  --color-sage-light:    #8FAF95;
+  --color-warm-gray:     #6B6460;
+  --color-warm-gray-light: #9C9490;
+  --color-warm-gray-dark:  #3D3A38;
+  --color-warm-white:    #FFFFFF;
+  --color-border:        #E2D9D0;
+  --color-border-dark:   #C8BFBA;
+
+  /* Semantic */
+  --color-background:    var(--color-cream);
+  --color-foreground:    var(--color-warm-gray-dark);
+  --color-primary:       var(--color-terracotta);
+  --color-primary-hover: var(--color-terracotta-dark);
+  --color-success:       var(--color-sage);
+  --color-muted:         var(--color-cream-dark);
+  --color-muted-fg:      var(--color-warm-gray);
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-warm-gray-dark);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-cream-dark); }
+::-webkit-scrollbar-thumb { background: var(--color-border-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-warm-gray-light); }
