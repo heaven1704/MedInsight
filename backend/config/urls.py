@@ -22,8 +22,10 @@ urlpatterns = [
     # Step 3: JWT auth endpoints
     path("api/auth/", include("accounts.urls", namespace="accounts")),
 
-    # TODO Step 4: add app-level API routes
-    #   path("api/patients/",      include("patients.urls")),
+    # Step 4: Patient & Family endpoints
+    path("api/", include("patients.urls")),
+
+    # TODO Step 4 (remaining): appointments and documents
     #   path("api/appointments/",  include("appointments.urls")),
     #   path("api/documents/",     include("documents.urls")),
 ]
